@@ -1,17 +1,16 @@
 import React from 'react';
 import { Text, View, TouchableOpacity, Dimensions } from 'react-native';
 
-export default class WinWin extends React.Component{
+export default class LoseLose extends React.Component{
     constructor(props) {
         super(props);
     }
 
     render() {
-        const food = this.props.foo.toUpperCase().split('_');
         return (
-            <View style={styles.winStyle}>
-                <Text style={styles.winText}>{food.map(x => x+' ')}</Text>
-                <Text style={styles.winText}>{"CONFIDENCE: " + Math.round(this.props.conf*100) / 100}</Text>
+            <View style={styles.loseStyle}>
+                <Text style={styles.loseText}>NO MATCH</Text>
+                <Text style={styles.loseText}>{"CONFIDENCE: " + Math.round(this.props.conf*100) / 100}</Text>
                 <TouchableOpacity
                     onPress={this.props.handler}>
                     <Text style={styles.closeText}>CLOSE</Text>
@@ -24,18 +23,18 @@ export default class WinWin extends React.Component{
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 const styles = {
-    winStyle : {
+    loseStyle : {
         zIndex: 999,
         width: screenWidth,
         height: screenHeight*.55,
         position: 'absolute',
         top: screenHeight*.225,
         alignText: 'center',
-        backgroundColor: '#88F08F',
+        backgroundColor: '#FF7674',
         borderRadius: 10,
         opacity: .95
     },
-    winText :{
+    loseText :{
         textAlign: 'center', // <-- the magic
         fontSize: .06*screenHeight,
         margin: .02*screenHeight,

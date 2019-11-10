@@ -5,6 +5,7 @@ import { Camera } from 'expo-camera';
 import Axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
 import WinWin from './WinWin.js';
+import LoseLose from "./LoseLose";
 
 export default class CameraExample extends React.Component {
     constructor(props) {
@@ -13,7 +14,7 @@ export default class CameraExample extends React.Component {
             hasCameraPermission: null,
             type: Camera.Constants.Type.back,
             loading: false,
-            isWinner: false,
+            displayResult: false,
             data: {
                 food: "",
                 confidence: 0
@@ -23,7 +24,7 @@ export default class CameraExample extends React.Component {
     }
 
     handler() {
-        this.setState({data: { food: "", confidence: 0} })
+        this.setState({ displayResult : false, data: { food: "", confidence: 0} })
     }
 
     async snapPhoto() {
@@ -42,19 +43,18 @@ export default class CameraExample extends React.Component {
             }
             this.setState({loading: false, isWinner: true, data : { food : result.data.food, confidence : result.data.confidence}});
             */
-            await this.camera.takePictureAsync(options).then(photo => {
+            try {
+                const photo = await this.camera.takePictureAsync(options);
                 photo.exif.Orientation = 1;
-                //TODO: replace with actual api call
-                Axios.get('https://swapi.co/api/people/1/')
-                    .then(result => {
-                        this.setState({loading: false, isWinner: true, data : { food : result.data.food, confidence : result.data.confidence}});
-                        //console.log(result.data.name);
-                        setTimeout(() => Alert.alert("It's " + result.data.name), 50);
-                    }).catch( () => {
-                    this.setState({loading: false});
-                    setTimeout(() => Alert.alert("Failed to get data from api"), 50);
-                });
-            })
+                const result = await Axios.post("https://seefood-inference-wuc3kam6ya-uc.a.run.app/predictions", {base64: photo.base64}, { headers: { "Content-Type": "application/json" }});
+                console.log(result.data);
+                this.setState({ data : result.data });
+            } catch (error) {
+                console.log(error.message);
+                setTimeout(() => Alert.alert("Failed to get data from api"), 50);
+            } finally {
+                this.setState({ loading: false });
+            }
         }
     }
 
@@ -74,6 +74,8 @@ export default class CameraExample extends React.Component {
                 <View style={{ flex: 1, backgroundColor: '#ebebeb' }}>
                     {this.state.data.confidence > .5 && this.state.data.food !== "" ?
                         <WinWin foo={this.state.data.food} conf={this.state.data.confidence} handler={this.handler}/> : null}
+                    {this.state.data.confidence <= .5 && this.state.data.food !== "" ?
+                        <LoseLose foo={this.state.data.food} conf={this.state.data.confidence} handler={this.handler}/> : null}
                     <Spinner
                         visible={this.state.loading}
                         textContent={'Loading...'}
